@@ -40,6 +40,11 @@
   .box { background:var(--sand); border-left:4px solid var(--terra); padding:12px 14px; margin:18px 0; font-size:14px; line-height:1.5; }
   .box b { color:var(--blue); }
   footer { max-width:760px; margin:0 auto; padding:16px; font-size:12px; color:var(--grey); }
+  .navbtn { display:inline-block; margin:6px 0 4px; padding:6px 10px; border-radius:8px; background:#1F4E79; color:#fff !important;
+           font-weight:700; text-decoration:none; }
+  .locbtn { background:#fff; width:34px; height:34px; font-size:20px; line-height:30px; text-align:center; cursor:pointer;
+            border-radius:4px; }
+  .me { width:16px; height:16px; border-radius:50%; background:#2A7FFF; border:3px solid #fff; box-shadow:0 0 0 6px rgba(42,127,255,.25); }
   .leaflet-div-icon.pin { background:none; border:none; }
   .pin span { display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%;
               color:#fff; font:700 12px sans-serif; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.35); }
@@ -59,7 +64,7 @@
 <script>
 const DAYS = {
   Mi:{name:"Mittwoch, 18.11.", motto:"Ankommen – erster Abend mit Rebetiko", c:"var(--mi)", hex:"#6B8E23"},
-  Do:{name:"Donnerstag, 19.11.", motto:"Akropolis mit Guide, nachmittags die Klassiker der Innenstadt", c:"var(--do)", hex:"#1F4E79"},
+  Do:{name:"Donnerstag, 19.11.", motto:"Akropolis mit Guide ab 9 Uhr, nachmittags die Klassiker der Innenstadt", c:"var(--do)", hex:"#1F4E79"},
   Fr:{name:"Freitag, 20.11.", motto:"Schätze, Wald und Abendlicht", c:"var(--fr)", hex:"#C0623A"},
   Sa:{name:"Samstag, 21.11.", motto:"Märkte, Musik und Meer", c:"var(--sa)", hex:"#7B4F9E"},
   So:{name:"Sonntag, 22.11.", motto:"Abreise", c:"var(--so)", hex:"#777777"},
@@ -72,21 +77,22 @@ const STOPS = [
  {d:"Mi",t:"20:00",n:"A",r:1,name:"Klimataria",q:"Klimataria taverna Psyrri Athens",lat:37.9787,lon:23.7238,what:"Taverne mit Live-Rebetiko seit 1927",
   txt:"Familientaverne am Platia Theatrou, Live-Rebetiko Mittwoch bis Sonntag. Für den Fisch-Fan: gegrillter Oktopus, Gigantes. Für den Fleisch-Fan: geschmortes Lamm.",tip:"Reservieren!"},
 
- {d:"Do",t:"08:00",n:1,name:"Akropolis",q:"Acropolis of Athens",lat:37.9715,lon:23.7257,what:"Der Burgberg mit dem Parthenon",
-  txt:"Das religiöse Zentrum des antiken Athen (5. Jh. v. Chr.): Parthenon, Erechtheion mit den Karyatiden, Propyläen. Mit lizenziertem Guide, Treffpunkt 7:45 am Südhang-Eingang.",tip:"Winter: 8–17 Uhr, letzter Einlass 16:30. Zeitfenster vorab buchen."},
- {d:"Do",t:"10:30",n:2,name:"Areopag",q:"Areopagus Hill Athens",lat:37.9722,lon:23.7234,what:"Felsen mit Blick auf die Agora",
+ {d:"Do",t:"08:00",name:"Frühstück",txt:"Gemütlich frühstücken, z. B. in Koukaki oder Plaka – beide nah am Akropolis-Eingang."},
+ {d:"Do",t:"09:00",n:1,name:"Akropolis",q:"Acropolis of Athens",lat:37.9715,lon:23.7257,what:"Der Burgberg mit dem Parthenon",
+  txt:"Das religiöse Zentrum des antiken Athen (5. Jh. v. Chr.): Parthenon, Erechtheion mit den Karyatiden, Propyläen. Führung mit lizenziertem Guide ab 9:00, Treffpunkt 8:45 am Südhang-Eingang.",tip:"Winter: 8–17 Uhr, letzter Einlass 16:30. Zeitfenster vorab buchen."},
+ {d:"Do",t:"11:30",n:2,name:"Areopag",q:"Areopagus Hill Athens",lat:37.9722,lon:23.7234,what:"Felsen mit Blick auf die Agora",
   txt:"Glatter Marmorfelsen unterhalb der Akropolis, einst Sitz des obersten Gerichts. Kostenloser Aussichtspunkt – rutschig!"},
- {d:"Do",t:"11:00",n:3,name:"Antike Agora",q:"Ancient Agora of Athens",lat:37.9750,lon:23.7220,what:"Marktplatz der antiken Demokratie",
+ {d:"Do",t:"11:45",n:3,name:"Antike Agora",q:"Ancient Agora of Athens",lat:37.9750,lon:23.7220,what:"Marktplatz der antiken Demokratie",
   txt:"Hier diskutierte Sokrates. Highlights: der fast vollständig erhaltene Hephaistos-Tempel und die wiederaufgebaute Stoa des Attalos."},
- {d:"Do",t:"13:00",n:"B",r:1,name:"To Steki tou Ilia",q:"To Steki tou Ilia Eptachalkou 5 Athens",lat:37.9772,lon:23.7190,what:"Grilltaverne in Thissio",
+ {d:"Do",t:"13:15",n:"B",r:1,name:"To Steki tou Ilia",q:"To Steki tou Ilia Eptachalkou 5 Athens",lat:37.9772,lon:23.7190,what:"Grilltaverne in Thissio",
   txt:"Berühmt für Lammkoteletts (Paidakia). Dazu Salat, Fava, Pommes – für beide passt es."},
- {d:"Do",t:"14:15",n:4,name:"Plaka & Turm der Winde",q:"Tower of the Winds Athens",lat:37.9743,lon:23.7267,what:"Altstadt mit römischem Marktplatz",
+ {d:"Do",t:"14:45",n:4,name:"Plaka & Turm der Winde",q:"Tower of the Winds Athens",lat:37.9743,lon:23.7267,what:"Altstadt mit römischem Marktplatz",
   txt:"Verwinkelte Gassen am Fuß der Akropolis. Mittendrin die Römische Agora mit dem achteckigen Turm der Winde – einer antiken Wetterstation."},
- {d:"Do",t:"15:00",n:5,name:"Hadrianstor & Olympieion",q:"Temple of Olympian Zeus Athens",lat:37.9697,lon:23.7327,what:"Größter Tempel Griechenlands",
-  txt:"Von über 100 Säulen stehen noch 15, jede 17 m hoch. Daneben das römische Hadrianstor.",tip:"Winter: nur bis 15 Uhr (letzter Einlass 14:40) – vom Zaun aus aber gut zu sehen."},
- {d:"Do",t:"15:30",n:6,name:"Panathenäisches Stadion",q:"Panathenaic Stadium Athens",lat:37.9683,lon:23.7410,what:"Marmorstadion der ersten Olympischen Spiele 1896",
+ {d:"Do",t:"15:30",n:5,name:"Hadrianstor & Olympieion",q:"Temple of Olympian Zeus Athens",lat:37.9697,lon:23.7327,what:"Größter Tempel Griechenlands",
+  txt:"Von über 100 Säulen stehen noch 15, jede 17 m hoch. Daneben das römische Hadrianstor.",tip:"Gelände schließt im Winter um 15 Uhr – die Säulen seht ihr gut vom Zaun aus, das Tor steht frei an der Straße."},
+ {d:"Do",t:"15:45",n:6,name:"Panathenäisches Stadion",q:"Panathenaic Stadium Athens",lat:37.9683,lon:23.7410,what:"Marmorstadion der ersten Olympischen Spiele 1896",
   txt:"Komplett aus weißem Marmor. Ihr dürft auf die Laufbahn und aufs Siegerpodest. Audioguide inklusive.",tip:"Winter: 8–17 Uhr."},
- {d:"Do",t:"16:30",n:7,name:"Nationalgarten & Zappeion",q:"National Garden Athens",lat:37.9727,lon:23.7376,what:"Grüne Oase im Zentrum",
+ {d:"Do",t:"16:35",n:7,name:"Nationalgarten & Zappeion",q:"National Garden Athens",lat:37.9727,lon:23.7376,what:"Grüne Oase im Zentrum",
   txt:"Schattiger Park aus dem 19. Jh. mit Teichen und alten Bäumen; am Südende das prächtige Zappeion."},
  {d:"Do",t:"17:00",n:8,name:"Syntagma – Wachablösung",q:"Tomb of the Unknown Soldier Athens",lat:37.9755,lon:23.7365,what:"Die Garde mit Faltenrock und Bommelschuhen",
   txt:"Vor dem Parlament bewachen die Evzonen das Grab des Unbekannten Soldaten. Wachwechsel jede volle Stunde, ca. 10 Minuten, kostenlos."},
@@ -118,9 +124,22 @@ const STOPS = [
 ];
 
 const gm = s => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(s.q);
+const FAR = new Set([11, 17]); // Kaisariani, Piräus: nicht zu Fuß
+const nav = s => "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(s.q) +
+  "&travelmode=" + (FAR.has(s.n) ? "transit" : "walking");
 const map = L.map("map", {scrollWheelZoom:false}).setView([37.974, 23.732], 14);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom:19, attribution:"© OpenStreetMap"}).addTo(map);
 
+const Loc = L.Control.extend({options:{position:"topleft"},
+  onAdd(){ const d = L.DomUtil.create("div","leaflet-bar locbtn"); d.title="Mein Standort"; d.innerHTML="◎";
+    L.DomEvent.on(d,"click",e=>{L.DomEvent.stop(e); map.locate({setView:true, maxZoom:16});}); return d; }});
+map.addControl(new Loc());
+let meMarker;
+map.on("locationfound", e => {
+  const ic = L.divIcon({className:"", html:'<div class="me"></div>', iconSize:[16,16], iconAnchor:[8,8]});
+  if (meMarker) meMarker.setLatLng(e.latlng); else meMarker = L.marker(e.latlng,{icon:ic}).addTo(map).bindPopup("Du bist hier");
+});
+map.on("locationerror", () => alert("Standort nicht verfügbar – bitte Ortungsdienste für den Browser erlauben."));
 const markers = [];
 STOPS.forEach((s, i) => {
   if (s.lat == null) return;
@@ -128,13 +147,14 @@ STOPS.forEach((s, i) => {
     html:`<span class="${s.r?'r':''}" style="background:${DAYS[s.d].hex}">${s.n}</span>`});
   const m = L.marker([s.lat, s.lon], {icon}).addTo(map)
     .bindPopup(`<b>${s.name}</b><br>${DAYS[s.d].name.split(",")[0]} · ${s.t}<br><i>${s.what||""}</i><br>
-      <a href="${gm(s)}" target="_blank">In Google Maps öffnen</a> · <a href="#s${i}">Details</a>`);
+      <a class="navbtn" href="${nav(s)}" target="_blank">🧭 Hierhin navigieren</a><br>
+      <a href="${gm(s)}" target="_blank">In Google Maps ansehen</a> · <a href="#s${i}">Details</a>`);
   m.day = s.d; markers.push(m);
 });
 
 const list = document.getElementById("list");
 let html = `<div class="box"><b>Legende:</b> Kreise = Sehenswürdigkeiten, Quadrate = Restaurants, Farbe = Tag.
-  Tippe auf einen Punkt in der Karte oder auf „Navigation“, um Google Maps zu öffnen.</div>`;
+  Tippe auf einen Punkt und dann auf „Hierhin navigieren“ – Google Maps startet die Route von deinem Standort (zu Fuß, bei Kaisariani und Piräus mit Öffis). Mit ◎ oben links auf der Karte siehst du, wo du gerade bist.</div>`;
 Object.entries(DAYS).forEach(([k, d]) => {
   html += `<section class="day" id="day-${k}" style="--c:${d.c}"><h2>${d.name}</h2><div class="motto">${d.motto}</div>`;
   STOPS.forEach((s, i) => {
@@ -142,7 +162,7 @@ Object.entries(DAYS).forEach(([k, d]) => {
     html += `<div class="item" id="s${i}"><div class="time">${s.t}</div><div class="body">
       <h3>${s.n!=null?`<span class="num ${s.r?'r':''}">${s.n}</span>`:""}${s.name}</h3>
       ${s.what?`<div class="what">${s.what}</div>`:""}<p>${s.txt}</p>${s.tip?`<div class="tip">💡 ${s.tip}</div>`:""}
-      ${s.lat!=null?`<div class="btns"><a href="${gm(s)}" target="_blank">📍 Navigation</a><button onclick="focusStop(${i})">🗺 Auf Karte</button></div>`:""}
+      ${s.lat!=null?`<div class="btns"><a href="${nav(s)}" target="_blank">🧭 Navigation</a><a href="${gm(s)}" target="_blank">📍 Infos</a><button onclick="focusStop(${i})">🗺 Auf Karte</button></div>`:""}
     </div></div>`;
   });
   html += `</section>`;
