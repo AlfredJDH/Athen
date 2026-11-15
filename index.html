@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Athen · 18.–22. November 2026</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root { --blue:#1F4E79; --terra:#C0623A; --sand:#F6F1E9; --line:#E2D9CC; --ink:#222; --grey:#666;
+          --mi:#6B8E23; --do:#1F4E79; --fr:#C0623A; --sa:#7B4F9E; --so:#777; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:var(--ink); background:#fff; }
+  header { padding:20px 16px 12px; max-width:760px; margin:0 auto; }
+  h1 { font-family:Georgia,serif; color:var(--blue); font-size:26px; margin:0 0 4px; }
+  .sub { color:var(--grey); font-size:14px; }
+  #map { height:46vh; min-height:300px; max-width:760px; margin:0 auto; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  nav { position:sticky; top:0; z-index:1000; background:#fff; border-bottom:1px solid var(--line); }
+  nav .in { max-width:760px; margin:0 auto; display:flex; gap:6px; padding:10px 12px; overflow-x:auto; }
+  nav button { border:1.5px solid var(--c); color:var(--c); background:#fff; border-radius:999px; padding:6px 13px;
+               font-size:14px; font-weight:600; white-space:nowrap; cursor:pointer; }
+  nav button.on { background:var(--c); color:#fff; }
+  main { max-width:760px; margin:0 auto; padding:4px 14px 40px; }
+  .day { margin-top:22px; }
+  .day h2 { font-family:Georgia,serif; font-size:21px; margin:0; color:var(--c); }
+  .day .motto { font-size:13px; color:var(--grey); font-style:italic; margin:2px 0 10px; }
+  .item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .time { flex:0 0 58px; font-weight:700; color:var(--terra); font-size:14px; padding-top:2px; }
+  .body { flex:1; }
+  .body h3 { margin:0 0 3px; font-size:16px; display:flex; align-items:center; gap:8px; }
+  .num { display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:22px; border-radius:50%;
+         background:var(--c); color:#fff; font-size:12px; }
+  .num.r { border-radius:5px; background:#fff; color:var(--c); border:1.5px solid var(--c); }
+  .what { font-size:13px; color:var(--terra); font-style:italic; margin-bottom:4px; }
+  .body p { margin:0 0 6px; font-size:14px; line-height:1.45; }
+  .tip { font-size:13px; color:var(--grey); }
+  .btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+  .btns a, .btns button { font-size:13px; text-decoration:none; padding:5px 10px; border-radius:8px; border:1px solid var(--line);
+         background:var(--sand); color:var(--blue); font-weight:600; cursor:pointer; }
+  .box { background:var(--sand); border-left:4px solid var(--terra); padding:12px 14px; margin:18px 0; font-size:14px; line-height:1.5; }
+  .box b { color:var(--blue); }
+  footer { max-width:760px; margin:0 auto; padding:16px; font-size:12px; color:var(--grey); }
+  .leaflet-div-icon.pin { background:none; border:none; }
+  .pin span { display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%;
+              color:#fff; font:700 12px sans-serif; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.35); }
+  .pin span.r { border-radius:6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Athen</h1>
+  <div class="sub">Mi 18. – So 22. November 2026 · Die Klassiker und das echte Athen</div>
+</header>
+<nav><div class="in" id="tabs"></div></nav>
+<div id="map"></div>
+<main id="list"></main>
+<footer>Öffnungszeiten Stand November 2026 – bitte vor Ort kurz prüfen. Kartendaten © OpenStreetMap-Mitwirkende.</footer>
+
+<script>
+const DAYS = {
+  Mi:{name:"Mittwoch, 18.11.", motto:"Ankommen – erster Abend mit Rebetiko", c:"var(--mi)", hex:"#6B8E23"},
+  Do:{name:"Donnerstag, 19.11.", motto:"Akropolis mit Guide, nachmittags die Klassiker der Innenstadt", c:"var(--do)", hex:"#1F4E79"},
+  Fr:{name:"Freitag, 20.11.", motto:"Schätze, Wald und Abendlicht", c:"var(--fr)", hex:"#C0623A"},
+  Sa:{name:"Samstag, 21.11.", motto:"Märkte, Musik und Meer", c:"var(--sa)", hex:"#7B4F9E"},
+  So:{name:"Sonntag, 22.11.", motto:"Abreise", c:"var(--so)", hex:"#777777"},
+};
+// t: time, n: map label, name, q: Google Maps search, lat/lon, what: short, txt: description, tip
+const STOPS = [
+ {d:"Mi",t:"16:00",name:"Ankunft Flughafen",txt:"Metro-Linie 3 (blau) direkt ins Zentrum (Syntagma oder Monastiraki), ca. 40 Min. Alternativ Taxi."},
+ {d:"Mi",t:"18:30",n:9,name:"Anafiotika",q:"Anafiotika, Athens",lat:37.9727,lon:23.7290,what:"Kykladendorf mitten in der Stadt",
+  txt:"Winziges Viertel aus weiß gekalkten Häuschen und Treppengassen am Nordhang der Akropolis. Im 19. Jh. von Handwerkern der Insel Anafi im Stil ihrer Heimat gebaut. Abends mit Blick auf die beleuchtete Akropolis."},
+ {d:"Mi",t:"20:00",n:"A",r:1,name:"Klimataria",q:"Klimataria taverna Psyrri Athens",lat:37.9787,lon:23.7238,what:"Taverne mit Live-Rebetiko seit 1927",
+  txt:"Familientaverne am Platia Theatrou, Live-Rebetiko Mittwoch bis Sonntag. Für den Fisch-Fan: gegrillter Oktopus, Gigantes. Für den Fleisch-Fan: geschmortes Lamm.",tip:"Reservieren!"},
+
+ {d:"Do",t:"08:00",n:1,name:"Akropolis",q:"Acropolis of Athens",lat:37.9715,lon:23.7257,what:"Der Burgberg mit dem Parthenon",
+  txt:"Das religiöse Zentrum des antiken Athen (5. Jh. v. Chr.): Parthenon, Erechtheion mit den Karyatiden, Propyläen. Mit lizenziertem Guide, Treffpunkt 7:45 am Südhang-Eingang.",tip:"Winter: 8–17 Uhr, letzter Einlass 16:30. Zeitfenster vorab buchen."},
+ {d:"Do",t:"10:30",n:2,name:"Areopag",q:"Areopagus Hill Athens",lat:37.9722,lon:23.7234,what:"Felsen mit Blick auf die Agora",
+  txt:"Glatter Marmorfelsen unterhalb der Akropolis, einst Sitz des obersten Gerichts. Kostenloser Aussichtspunkt – rutschig!"},
+ {d:"Do",t:"11:00",n:3,name:"Antike Agora",q:"Ancient Agora of Athens",lat:37.9750,lon:23.7220,what:"Marktplatz der antiken Demokratie",
+  txt:"Hier diskutierte Sokrates. Highlights: der fast vollständig erhaltene Hephaistos-Tempel und die wiederaufgebaute Stoa des Attalos."},
+ {d:"Do",t:"13:00",n:"B",r:1,name:"To Steki tou Ilia",q:"To Steki tou Ilia Eptachalkou 5 Athens",lat:37.9772,lon:23.7190,what:"Grilltaverne in Thissio",
+  txt:"Berühmt für Lammkoteletts (Paidakia). Dazu Salat, Fava, Pommes – für beide passt es."},
+ {d:"Do",t:"14:15",n:4,name:"Plaka & Turm der Winde",q:"Tower of the Winds Athens",lat:37.9743,lon:23.7267,what:"Altstadt mit römischem Marktplatz",
+  txt:"Verwinkelte Gassen am Fuß der Akropolis. Mittendrin die Römische Agora mit dem achteckigen Turm der Winde – einer antiken Wetterstation."},
+ {d:"Do",t:"15:00",n:5,name:"Hadrianstor & Olympieion",q:"Temple of Olympian Zeus Athens",lat:37.9697,lon:23.7327,what:"Größter Tempel Griechenlands",
+  txt:"Von über 100 Säulen stehen noch 15, jede 17 m hoch. Daneben das römische Hadrianstor.",tip:"Winter: nur bis 15 Uhr (letzter Einlass 14:40) – vom Zaun aus aber gut zu sehen."},
+ {d:"Do",t:"15:30",n:6,name:"Panathenäisches Stadion",q:"Panathenaic Stadium Athens",lat:37.9683,lon:23.7410,what:"Marmorstadion der ersten Olympischen Spiele 1896",
+  txt:"Komplett aus weißem Marmor. Ihr dürft auf die Laufbahn und aufs Siegerpodest. Audioguide inklusive.",tip:"Winter: 8–17 Uhr."},
+ {d:"Do",t:"16:30",n:7,name:"Nationalgarten & Zappeion",q:"National Garden Athens",lat:37.9727,lon:23.7376,what:"Grüne Oase im Zentrum",
+  txt:"Schattiger Park aus dem 19. Jh. mit Teichen und alten Bäumen; am Südende das prächtige Zappeion."},
+ {d:"Do",t:"17:00",n:8,name:"Syntagma – Wachablösung",q:"Tomb of the Unknown Soldier Athens",lat:37.9755,lon:23.7365,what:"Die Garde mit Faltenrock und Bommelschuhen",
+  txt:"Vor dem Parlament bewachen die Evzonen das Grab des Unbekannten Soldaten. Wachwechsel jede volle Stunde, ca. 10 Minuten, kostenlos."},
+ {d:"Do",t:"20:00",n:"C",r:1,name:"Karavitis",q:"Karavitis taverna Pangrati Athens",lat:37.9690,lon:23.7440,what:"Traditionelle Taverne seit 1926",
+  txt:"Eine der ältesten Tavernen Athens in Pangrati, wenige Minuten hinter dem Stadion. Stark bei Fleisch; für Pescetarier Ofengemüse, Gigantes, Salate.",tip:"Reservieren!"},
+
+ {d:"Fr",t:"08:30",n:10,name:"Archäologisches Nationalmuseum",q:"National Archaeological Museum Athens",lat:37.9890,lon:23.7323,what:"Größtes Antikenmuseum Griechenlands",
+  txt:"Goldene Maske des Agamemnon, Mechanismus von Antikythera (2.000 Jahre altes Rechengerät), Bronzestatue vom Kap Artemision, Fresken von Santorin. Kaffee im Museumsgarten.",tip:"Ab 16.11.: Mi–Mo 8:30–15:30."},
+ {d:"Fr",t:"11:45",n:11,name:"Kloster Kaisariani",q:"Kaisariani Monastery",lat:37.9603,lon:23.7976,what:"Byzantinisches Kloster im Wald",
+  txt:"Kloster aus dem 11. Jh. am Hausberg Hymettos. Leichter Rundweg 3–4 km, Abstecher zum Taxiarches-Hügel mit Blick über ganz Athen. Imbiss am Kiosk, Thymianhonig als Mitbringsel.",tip:"Taxi ab Syntagma ca. 20 Min., etwa 10–15 €."},
+ {d:"Fr",t:"16:15",n:12,name:"Filopappou-Hügel",q:"Philopappos Hill Athens",lat:37.9680,lon:23.7197,what:"Sonnenuntergang mit Akropolis-Blick",
+  txt:"Kiefernhügel gegenüber der Akropolis, unterwegs das „Gefängnis des Sokrates“. Sonnenuntergang ca. 17:05 – frontaler Blick auf den Parthenon."},
+ {d:"Fr",t:"17:45",n:13,name:"Akropolismuseum",q:"Acropolis Museum",lat:37.9684,lon:23.7286,what:"Die Originale vom Burgberg",
+  txt:"Echte Karyatiden, Parthenon-Fries mit Blick auf den echten Parthenon, unter dem Glasboden eine ausgegrabene antike Siedlung.",tip:"Freitags bis 22 Uhr (letzter Einlass 21:30)."},
+ {d:"Fr",t:"20:30",n:"D",r:1,name:"Kouvelos",q:"Kouvelos taverna Koukaki Athens",lat:37.9640,lon:23.7240,what:"Nachbarschaftstaverne in Koukaki",
+  txt:"Traditionelle Küche gleich um die Ecke vom Akropolismuseum.",tip:"Öffnungstage vorher prüfen."},
+
+ {d:"Sa",t:"08:30",n:14,name:"Bauernmarkt Kallidromiou",q:"Kallidromiou street market Exarchia",lat:37.9870,lon:23.7375,what:"Samstagsmarkt der Nachbarschaft",
+  txt:"Eine ganze Straße voller Stände: Obst, Käse, Oliven, Fisch, Blumen. Hier kaufen Einheimische ein. Probieren erwünscht.",tip:"Nur samstags, ca. 7–15 Uhr."},
+ {d:"Sa",t:"10:30",n:15,name:"Varvakios-Markthalle",q:"Varvakios Agora Athens",lat:37.9805,lon:23.7270,what:"Zentrale Markthalle von 1886",
+  txt:"Laute Fisch- und Fleischhallen, rundherum Gewürzläden. Alltag pur.",tip:"Geschlossene Schuhe anziehen."},
+ {d:"Sa",t:"12:30",n:16,name:"Stoa Athanaton",q:"Stoa Athanaton Sofokleous 19 Athens",lat:37.9800,lon:23.7247,what:"Rebetiko zum Mittagessen",
+  txt:"Musiklokal seit den 1930ern in der alten Markt-Passage. Bouzouki, Gesang, Einheimische singen mit. Grillfleisch und Meze.",tip:"Vorher anrufen, ob gespielt wird."},
+ {d:"Sa",t:"15:45",n:17,name:"Piräus – Peiraiki",q:"Peiraiki Piraeus",lat:37.9365,lon:23.6340,what:"Küstenpromenade am Hafen",
+  txt:"Mit Metro-Linie 1 ab Monastiraki ca. 25 Min. Spaziergang um die felsige Halbinsel, Sonnenuntergang über dem Meer. Danach Fischtaverne in Piräus – oder zurück nach Pangrati zu Mavro Provato (Meze, gut für beide)."},
+
+ {d:"So",t:"07:30",name:"Bougatsa-Frühstück",txt:"Blätterteig mit Grießcreme (süß, mit Zimt) oder Käse, dazu Freddo oder griechischer Kaffee."},
+ {d:"So",t:"08:30",name:"Metro zum Flughafen",txt:"Linie 3 (blau), ca. 40 Min. Nicht später losfahren – Abflug 11:00."},
+];
+
+const gm = s => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(s.q);
+const map = L.map("map", {scrollWheelZoom:false}).setView([37.974, 23.732], 14);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom:19, attribution:"© OpenStreetMap"}).addTo(map);
+
+const markers = [];
+STOPS.forEach((s, i) => {
+  if (s.lat == null) return;
+  const icon = L.divIcon({className:"pin", iconSize:[26,26], iconAnchor:[13,13],
+    html:`<span class="${s.r?'r':''}" style="background:${DAYS[s.d].hex}">${s.n}</span>`});
+  const m = L.marker([s.lat, s.lon], {icon}).addTo(map)
+    .bindPopup(`<b>${s.name}</b><br>${DAYS[s.d].name.split(",")[0]} · ${s.t}<br><i>${s.what||""}</i><br>
+      <a href="${gm(s)}" target="_blank">In Google Maps öffnen</a> · <a href="#s${i}">Details</a>`);
+  m.day = s.d; markers.push(m);
+});
+
+const list = document.getElementById("list");
+let html = `<div class="box"><b>Legende:</b> Kreise = Sehenswürdigkeiten, Quadrate = Restaurants, Farbe = Tag.
+  Tippe auf einen Punkt in der Karte oder auf „Navigation“, um Google Maps zu öffnen.</div>`;
+Object.entries(DAYS).forEach(([k, d]) => {
+  html += `<section class="day" id="day-${k}" style="--c:${d.c}"><h2>${d.name}</h2><div class="motto">${d.motto}</div>`;
+  STOPS.forEach((s, i) => {
+    if (s.d !== k) return;
+    html += `<div class="item" id="s${i}"><div class="time">${s.t}</div><div class="body">
+      <h3>${s.n!=null?`<span class="num ${s.r?'r':''}">${s.n}</span>`:""}${s.name}</h3>
+      ${s.what?`<div class="what">${s.what}</div>`:""}<p>${s.txt}</p>${s.tip?`<div class="tip">💡 ${s.tip}</div>`:""}
+      ${s.lat!=null?`<div class="btns"><a href="${gm(s)}" target="_blank">📍 Navigation</a><button onclick="focusStop(${i})">🗺 Auf Karte</button></div>`:""}
+    </div></div>`;
+  });
+  html += `</section>`;
+});
+html += `<div class="box"><b>Essen für beide:</b> Fleisch – Paidakia (Lammkoteletts), Kontosouvli, Biftekia, Souvlaki.
+  Vegetarisch &amp; Fisch – Gemista, Briam, Fava, Gigantes, Horta, Oktopus, Tagesfisch.<br>
+  <b>Ohne Alkohol:</b> Freddo Espresso, griechischer Kaffee, Bergtee, Vyssinada (Sauerkirsche).
+  <b>Bier:</b> griechisches Craft-Bier wie Septem oder Nissos.</div>
+  <div class="box"><b>Gut zu wissen:</b> Im November ca. 16–18 °C tagsüber, Regenschauer möglich. Sonnenuntergang gegen 17:05.
+  Die Akropolis ist im Winter 8–17 Uhr geöffnet, Eingang derzeit über den Südhang.</div>`;
+list.innerHTML = html;
+
+function focusStop(i){
+  const s = STOPS[i];
+  document.getElementById("map").scrollIntoView({behavior:"smooth"});
+  map.setView([s.lat, s.lon], 16);
+  markers.find(m => m.getLatLng().lat === s.lat && m.getLatLng().lng === s.lon)?.openPopup();
+}
+
+const tabs = document.getElementById("tabs");
+const all = [["Alle","var(--blue)",null], ...Object.entries(DAYS).filter(([k])=>k!=="So").map(([k,d])=>[d.name.split(",")[0],d.c,k])];
+all.forEach(([label, c, k], idx) => {
+  const b = document.createElement("button");
+  b.textContent = label; b.style.setProperty("--c", c); if (idx===0) b.classList.add("on");
+  b.onclick = () => {
+    tabs.querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+    const vis = markers.filter(m => !k || m.day === k);
+    markers.forEach(m => vis.includes(m) ? m.addTo(map) : map.removeLayer(m));
+    if (vis.length) map.fitBounds(L.featureGroup(vis).getBounds().pad(0.15));
+    if (k) document.getElementById("day-"+k).scrollIntoView({behavior:"smooth"});
+  };
+  tabs.appendChild(b);
+});
+</script>
+</body>
+</html>
