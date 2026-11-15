@@ -97,7 +97,7 @@ const STOPS = [
  {d:"Do",t:"17:00",n:8,name:"Syntagma – Wachablösung",q:"Tomb of the Unknown Soldier Athens",lat:37.9755,lon:23.7365,what:"Die Garde mit Faltenrock und Bommelschuhen",
   txt:"Vor dem Parlament bewachen die Evzonen das Grab des Unbekannten Soldaten. Wachwechsel jede volle Stunde, ca. 10 Minuten, kostenlos."},
  {d:"Do",t:"17:20",n:18,name:"Optional: Lykabettus",q:"Lycabettus Funicular Aristippou Athens",lat:37.9818,lon:23.7432,what:"Höchster Hügel im Zentrum – mit Standseilbahn",
-  txt:"277 m hoher Kalksteinkegel mitten in der Stadt. Taxi ab Syntagma ca. 3 Min. zur Talstation in Kolonaki, die Standseilbahn fährt in 3 Min. durch einen Tunnel nach oben. Oben: weiße Kapelle Agios Georgios und 360°-Blick – nach Sonnenuntergang leuchten Akropolis und Stadt bis zum Meer. Gegen 19:15 runter und mit dem Taxi nach Pangrati.",
+  txt:"277 m hoher Kalksteinkegel mitten in der Stadt. Taxi ab Syntagma ca. 3 Min. zur Talstation in Kolonaki, die Standseilbahn fährt in 3 Min. durch einen Tunnel nach oben. Oben: weiße Kapelle Agios Georgios und 360°-Blick – nach Sonnenuntergang (ca. 17:10) leuchten Akropolis und Stadt bis zum Meer. Gegen 19:15 runter und mit dem Taxi nach Pangrati.",
   tip:"Ca. 10 € einfach / 13 € hin & zurück (Angaben 2026), täglich ca. 9:00–2:30. Wer müde ist: lieber Pause im Hotel."},
  {d:"Do",t:"20:00",n:"C",r:1,name:"Karavitis",q:"Karavitis taverna Pangrati Athens",lat:37.9690,lon:23.7440,what:"Traditionelle Taverne seit 1926",
   txt:"Eine der ältesten Tavernen Athens in Pangrati, wenige Minuten hinter dem Stadion. Stark bei Fleisch; für Pescetarier Ofengemüse, Gigantes, Salate.",tip:"Reservieren!"},
@@ -140,7 +140,7 @@ map.addControl(new Loc());
 let meMarker;
 map.on("locationfound", e => {
   const ic = L.divIcon({className:"", html:'<div class="me"></div>', iconSize:[16,16], iconAnchor:[8,8]});
-  if (meMarker) meMarker.setLatLng(e.latlng); else meMarker = L.marker(e.latlng,{icon:ic}).addTo(map).bindPopup("Du bist hier");
+  if (meMarker) meMarker.setLatLng(e.latlng); else meMarker = L.marker(e.latlng,{icon:ic}).addTo(map).bindPopup("Ihr seid hier");
 });
 map.on("locationerror", () => alert("Standort nicht verfügbar – bitte Ortungsdienste für den Browser erlauben."));
 const markers = [];
@@ -157,7 +157,7 @@ STOPS.forEach((s, i) => {
 
 const list = document.getElementById("list");
 let html = `<div class="box"><b>Legende:</b> Kreise = Sehenswürdigkeiten, Quadrate = Restaurants, Farbe = Tag.
-  Tippe auf einen Punkt und dann auf „Hierhin navigieren“ – Google Maps startet die Route von deinem Standort (zu Fuß, bei Kaisariani und Piräus mit Öffis). Mit ◎ oben links auf der Karte siehst du, wo du gerade bist.</div>`;
+  Tippt auf einen Punkt und dann auf „Hierhin navigieren“ – Google Maps startet die Route von eurem Standort (zu Fuß, bei Kaisariani und Piräus mit Öffis). Mit ◎ oben links auf der Karte seht ihr, wo ihr gerade seid.</div>`;
 Object.entries(DAYS).forEach(([k, d]) => {
   html += `<section class="day" id="day-${k}" style="--c:${d.c}"><h2>${d.name}</h2><div class="motto">${d.motto}</div>`;
   STOPS.forEach((s, i) => {
